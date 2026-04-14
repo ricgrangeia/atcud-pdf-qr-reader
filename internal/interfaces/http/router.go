@@ -29,7 +29,8 @@ type versionBody struct {
 //   - validates every request against the schema derived from the input structs
 func NewRouter() *gin.Engine {
 	router := gin.Default()
-	router.MaxMultipartMemory = 32 << 20 // 32 MB max upload size
+	router.SetTrustedProxies([]string{"172.16.0.0/12"}) // Docker bridge range — covers the Traefik proxy network
+	router.MaxMultipartMemory = 32 << 20                 // 32 MB max upload size
 
 	// Huma config — this is all the "swagger" setup you need.
 	humaConfig := huma.DefaultConfig("GoApi — Leitor de QR Code Fiscal ATCUD", appConfig.AppVersion)
