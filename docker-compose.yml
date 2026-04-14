@@ -15,6 +15,7 @@ services:
       - VLLM_BASE_URL=${VLLM_BASE_URL}
       - VLLM_API_KEY=${VLLM_API_KEY}
       - VLLM_MODEL=${VLLM_MODEL}
+      - GIN_MODE=${GIN_MODE}
     # Sem ports: — o Traefik trata do roteamento externo.
     # Descomentar apenas para testes locais sem Traefik:
     # ports:
