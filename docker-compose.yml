@@ -1,0 +1,48 @@
+networks:
+  proxy-network:
+    name: ${PROXY_NETWORK_NAME}
+    external: true
+
+services:
+  app:
+    image: go-api-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-api-app
+    environment:
+      - PORT=${PORT:-8080}
+      - VLLM_BASE_URL=${VLLM_BASE_URL}
+      - VLLM_API_KEY=${VLLM_API_KEY}
+      - VLLM_MODEL=${VLLM_MODEL}
+    # Sem ports: — o Traefik trata do roteamento externo.
+    # Descomentar apenas para testes locais sem Traefik:
+    # ports:
+    #   - "8080:8080"
+    init: true
+    restart: unless-stopped
+    user: "10001:10001"
+    networks:
+      - proxy-network
+    labels:
+      # Activar Traefik para este contentor
+      - "traefik.enable=true"
+      # Router HTTPS — serve qrcode.appa8.com com TLS
+      - "traefik.http.routers.go-api-app.rule=Host(`qrcode.appa8.com`)"
+      - "traefik.http.routers.go-api-app.entrypoints=websecure"
+      - "traefik.http.routers.go-api-app.tls=true"
+      - "traefik.http.routers.go-api-app.tls.certresolver=letsencrypt"
+      # Router HTTP — redireciona automaticamente para HTTPS
+      - "traefik.http.routers.go-api-app-http.rule=Host(`qrcode.appa8.com`)"
+      - "traefik.http.routers.go-api-app-http.entrypoints=web"
+      - "traefik.http.routers.go-api-app-http.middlewares=redirect-https"
+      # Middleware de redireccionamento HTTP → HTTPS
+      - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-https.redirectscheme.permanent=true"
+      # Porta interna do contentor (deve coincidir com PORT)
+      - "traefik.http.services.go-api-app.loadbalancer.server.port=8080"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ── SEO básico ────────────────────────────────────────────── -->
+  <title>Leitor de QR Code Fiscal ATCUD — Documentos Fiscais Portugal</title>
+  <meta name="description"
+        content="Ferramenta gratuita para descodificar QR codes ATCUD em documentos fiscais portugueses.
+                 Extrai NIF do emitente, NIF do adquirente, tipo de documento, linhas de IVA e totais
+                 a partir de faturas, recibos e outros documentos emitidos pela AT." />
+  <meta name="keywords"
+        content="ATCUD, QR code fiscal, fatura portuguesa, NIF, IVA, AT, Autoridade Tributária,
+                 descodificar QR, documento fiscal, Portugal" />
+  <meta name="author" content="GoApi" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- ── Open Graph (Facebook, LinkedIn, WhatsApp, etc.) ───────── -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:locale"      content="pt_PT" />
+  <meta property="og:title"       content="Leitor de QR Code Fiscal ATCUD — Portugal" />
+  <meta property="og:description" content="Descodifique QR codes ATCUD de documentos fiscais portugueses.
+                                            Obtenha NIF do emitente, tipo de documento, IVA e totais em JSON estruturado." />
+
+  <!-- ── Twitter Card ──────────────────────────────────────────── -->
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="Leitor de QR Code Fiscal ATCUD — Portugal" />
+  <meta name="twitter:description" content="Descodifique QR codes ATCUD de documentos fiscais portugueses em JSON estruturado." />
+
+  <!-- ── Dados estruturados JSON-LD (Google Rich Results) ──────── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Leitor de QR Code Fiscal ATCUD",
+    "description": "Ferramenta para descodificar QR codes ATCUD em documentos fiscais portugueses. Extrai NIF do emitente, NIF do adquirente, tipo de documento, linhas de IVA e totais.",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "All",
+    "inLanguage": "pt-PT",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR"
+    },
+    "featureList": [
+      "Descodificação de QR codes ATCUD",
+      "Extracção de NIF do emitente e adquirente",
+      "Identificação de tipo e estado do documento",
+      "Cálculo de linhas de IVA por taxa e região fiscal",
+      "Suporte para Portugal Continental, Açores e Madeira"
+    ]
+  }
+  </script>
+
+  <!-- ── Favicon inline (SVG) ──────────────────────────────────── -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧾</text></svg>" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Realce de sintaxe JSON */
+    .json-chave   { color: #0f766e; }
+    .json-texto   { color: #15803d; }
+    .json-numero  { color: #b45309; }
+    .json-bool    { color: #1d4ed8; }
+    .json-nulo    { color: #9333ea; }
+
+    .drop-activo { border-color: #3b82f6; background-color: #eff6ff; }
+
+    @keyframes rodar { to { transform: rotate(360deg); } }
+    .spinner { animation: rodar 0.8s linear infinite; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-800">
+
+  <!-- ── Cabeçalho ──────────────────────────────────────────── -->
+  <header class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
+      <svg class="w-7 h-7 text-blue-600 shrink-0" fill="none" stroke="currentColor"
+           stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586
+             a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"/>
+      </svg>
+      <div>
+        <h1 class="text-lg font-semibold leading-none">Leitor de Documentos Fiscais</h1>
+        <p class="text-xs text-gray-400 mt-0.5">Descodificação de QR codes ATCUD — Portugal</p>
+      </div>
+      <a href="/docs" target="_blank" rel="noopener noreferrer"
+         class="ml-auto text-xs text-blue-500 hover:text-blue-700 hover:underline shrink-0">
+        Documentação API ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- ── Conteúdo principal ─────────────────────────────────── -->
+  <main class="max-w-4xl mx-auto px-6 py-8 space-y-6">
+
+    <!-- Painel de envio -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-5">
+
+      <!-- Zona de arrastar / soltar -->
+      <div id="zonaArrastar"
+           class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center
+                  cursor-pointer transition-colors hover:border-blue-400 hover:bg-blue-50"
+           onclick="document.getElementById('inputFicheiro').click()">
+        <input id="inputFicheiro" type="file" accept=".pdf" class="hidden" />
+
+        <svg id="iconoCarregar" class="w-10 h-10 mx-auto text-gray-300 mb-3"
+             fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+             aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5
+               m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+        </svg>
+
+        <p id="labelArrastar" class="text-sm text-gray-400">
+          Arraste um PDF para aqui, ou <span class="text-blue-500 font-medium">clique para seleccionar</span>
+        </p>
+        <p id="nomeFicheiro" class="hidden mt-2 text-sm font-medium text-blue-600"></p>
+      </div>
+
+      <!-- Selector de modo -->
+      <div>
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">O que pretende fazer?</p>
+        <div class="grid grid-cols-2 gap-3">
+
+          <button data-modo="parse" onclick="seleccionarModo('parse')"
+                  class="botao-modo border-2 rounded-lg p-4 text-left transition-all
+                         border-blue-500 bg-blue-50 ring-2 ring-blue-200">
+            <p class="font-semibold text-sm text-blue-700">Descodificar documento</p>
+            <p class="text-xs text-gray-500 mt-1">
+              NIF do emitente, NIF do adquirente, tipo de documento,
+              linhas de imposto, totais — JSON estruturado
+            </p>
+          </button>
+
+          <button data-modo="scan" onclick="seleccionarModo('scan')"
+                  class="botao-modo border-2 rounded-lg p-4 text-left transition-all
+                         border-gray-200 hover:border-gray-300">
+            <p class="font-semibold text-sm text-gray-700">Detectar ATCUD</p>
+            <p class="text-xs text-gray-500 mt-1">
+              Apenas detecta e devolve o conteúdo bruto dos QR codes que contêm ATCUD
+            </p>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Botão de envio -->
+      <button id="botaoEnviar" onclick="analisar()"
+              class="w-full py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold
+                     hover:bg-blue-700 active:scale-95 transition-all
+                     disabled:opacity-40 disabled:cursor-not-allowed
+                     flex items-center justify-center gap-2"
+              disabled>
+        <svg id="spinnerBotao" class="spinner w-4 h-4 hidden" fill="none" viewBox="0 0 24 24"
+             aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+        </svg>
+        <span id="labelBotao">Analisar documento</span>
+      </button>
+
+    </div>
+
+    <!-- Secção informativa (conteúdo indexável para SEO) -->
+    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+      <h2 class="text-base font-semibold text-gray-800">O que é o ATCUD?</h2>
+      <p class="text-sm text-gray-600 leading-relaxed">
+        O <strong>ATCUD</strong> (Código Único de Documento) é um código obrigatório em todos os documentos
+        fiscais emitidos em Portugal desde 2023, definido pela
+        <strong>Autoridade Tributária e Aduaneira (AT)</strong>.
+        É composto por um código de validação atribuído pela AT e pelo número sequencial do documento,
+        separados por um hífen — por exemplo: <code class="bg-gray-100 px-1 rounded text-xs font-mono">J66S9FDD-659283</code>.
+      </p>
+
+      <h2 class="text-base font-semibold text-gray-800">Como funciona esta ferramenta?</h2>
+      <p class="text-sm text-gray-600 leading-relaxed">
+        Carregue um ficheiro PDF de um documento fiscal português (fatura, recibo, nota de crédito, etc.).
+        A ferramenta localiza automaticamente todos os QR codes em todas as páginas, identifica os que
+        contêm um ATCUD válido e devolve os dados em JSON.
+      </p>
+
+      <h2 class="text-base font-semibold text-gray-800">Campos descodificados</h2>
+      <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+        <li><strong>NIF do emitente</strong> — identificação fiscal do vendedor</li>
+        <li><strong>NIF do adquirente</strong> — identificação fiscal do comprador (ou "0" para consumidor final)</li>
+        <li><strong>Tipo de documento</strong> — Fatura, Fatura-Recibo, Nota de Crédito, Recibo, etc.</li>
+        <li><strong>Estado do documento</strong> — Normal, Cancelado, Anulado, Autofaturação, etc.</li>
+        <li><strong>Linhas de IVA</strong> — base tributável e imposto por taxa (reduzida, intermédia, normal) e região (Continental, Açores, Madeira)</li>
+        <li><strong>Total do documento</strong> — valor total incluindo todos os impostos</li>
+        <li><strong>ATCUD</strong> — código de validação e número sequencial</li>
+        <li><strong>Informações adicionais</strong> — meio de pagamento e outros dados (campo S)</li>
+      </ul>
+    </section>
+
+    <!-- Painel de resultado (oculto até haver resposta) -->
+    <div id="painelResultado" class="hidden bg-white rounded-xl shadow-sm border border-gray-200">
+
+      <!-- Cabeçalho do resultado -->
+      <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+        <div class="flex items-center gap-2">
+          <span id="indicadorEstado"
+                class="inline-block w-2 h-2 rounded-full bg-green-400"></span>
+          <span id="tituloResultado" class="text-sm font-medium text-gray-700">Resposta</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="codigoHTTP" class="text-xs text-gray-400"></span>
+          <button onclick="copiarJSON()"
+                  class="text-xs text-blue-500 hover:text-blue-700 hover:underline">
+            Copiar JSON
+          </button>
+        </div>
+      </div>
+
+      <!-- Saída JSON -->
+      <pre id="saidaJSON"
+           class="p-5 text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap
+                  break-words max-h-[60vh] overflow-y-auto font-mono"></pre>
+
+    </div>
+
+  </main>
+
+  <!-- ── Rodapé ────────────────────────────────────────────────── -->
+  <footer class="max-w-4xl mx-auto px-6 py-6 mt-2">
+    <div class="border-t border-gray-200 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
+      <div class="flex items-center gap-4">
+        <span>Versão <span id="rodape-versao" class="font-mono text-gray-500">—</span></span>
+        <span>Actualizado em <span id="rodape-data" class="text-gray-500">—</span></span>
+      </div>
+      <div class="flex items-center gap-1">
+        <span>Desenvolvido por</span>
+        <a id="rodape-autor"
+           href="https://ricardo.grangeia.pt"
+           target="_blank" rel="noopener noreferrer"
+           class="font-medium text-blue-500 hover:text-blue-700 hover:underline">
+          Ricardo Grangeia
+        </a>
+        <span>· Licença MIT</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── Script ─────────────────────────────────────────────── -->
+  <script>
+    // ── Versão no rodapé ──────────────────────────────────────
+    fetch('/api/v1/version')
+      .then(r => r.json())
+      .then(v => {
+        document.getElementById('rodape-versao').textContent = v.version
+        document.getElementById('rodape-data').textContent   =
+          new Date(v.last_updated).toLocaleDateString('pt-PT', { day:'2-digit', month:'long', year:'numeric' })
+      })
+      .catch(() => {})
+
+    let ficheiroSeleccionado = null
+    let modoSeleccionado     = 'parse'
+    let ultimoJSON           = ''
+
+    // ── Selecção de ficheiro ───────────────────────────────────
+    const zonaArrastar = document.getElementById('zonaArrastar')
+    const inputFicheiro = document.getElementById('inputFicheiro')
+
+    inputFicheiro.addEventListener('change', () => {
+      if (inputFicheiro.files[0]) definirFicheiro(inputFicheiro.files[0])
+    })
+
+    zonaArrastar.addEventListener('dragover', e => {
+      e.preventDefault()
+      zonaArrastar.classList.add('drop-activo')
+    })
+
+    zonaArrastar.addEventListener('dragleave', () => {
+      zonaArrastar.classList.remove('drop-activo')
+    })
+
+    zonaArrastar.addEventListener('drop', e => {
+      e.preventDefault()
+      zonaArrastar.classList.remove('drop-activo')
+      const f = e.dataTransfer.files[0]
+      if (f && f.type === 'application/pdf') definirFicheiro(f)
+      else mostrarErro('Apenas são aceites ficheiros PDF.')
+    })
+
+    function definirFicheiro(f) {
+      ficheiroSeleccionado = f
+      document.getElementById('labelArrastar').classList.add('hidden')
+      const label = document.getElementById('nomeFicheiro')
+      label.textContent = `📄 ${f.name}  (${(f.size / 1024).toFixed(1)} KB)`
+      label.classList.remove('hidden')
+      document.getElementById('botaoEnviar').disabled = false
+    }
+
+    // ── Selector de modo ───────────────────────────────────────
+    function seleccionarModo(modo) {
+      modoSeleccionado = modo
+      document.querySelectorAll('.botao-modo').forEach(btn => {
+        const activo = btn.dataset.modo === modo
+        btn.classList.toggle('border-blue-500', activo)
+        btn.classList.toggle('bg-blue-50',      activo)
+        btn.classList.toggle('ring-2',          activo)
+        btn.classList.toggle('ring-blue-200',   activo)
+        btn.classList.toggle('border-gray-200', !activo)
+      })
+    }
+
+    // ── Chamada à API ──────────────────────────────────────────
+    async function analisar() {
+      if (!ficheiroSeleccionado) return
+
+      const endpoint = modoSeleccionado === 'parse'
+        ? '/api/v1/document/parse'
+        : '/api/v1/document/scan'
+
+      definirCarregamento(true)
+      ocultarResultado()
+
+      const corpo = new FormData()
+      corpo.append('file', ficheiroSeleccionado)
+
+      try {
+        const res  = await fetch(endpoint, { method: 'POST', body: corpo })
+        const data = await res.json()
+        mostrarResultado(data, res.status)
+      } catch (erro) {
+        mostrarResultado({ erro: erro.message }, 0)
+      } finally {
+        definirCarregamento(false)
+      }
+    }
+
+    // ── Estado de carregamento ─────────────────────────────────
+    function definirCarregamento(activo) {
+      document.getElementById('botaoEnviar').disabled = activo
+      document.getElementById('spinnerBotao').classList.toggle('hidden', !activo)
+      document.getElementById('labelBotao').textContent =
+        activo ? 'A analisar…' : 'Analisar documento'
+    }
+
+    // ── Mostrar resultado ──────────────────────────────────────
+    function mostrarResultado(dados, estado) {
+      const painel  = document.getElementById('painelResultado')
+      const saida   = document.getElementById('saidaJSON')
+      const indicador = document.getElementById('indicadorEstado')
+      const titulo  = document.getElementById('tituloResultado')
+      const httpLbl = document.getElementById('codigoHTTP')
+
+      const ok = estado >= 200 && estado < 300
+      indicador.className = `inline-block w-2 h-2 rounded-full ${ok ? 'bg-green-400' : 'bg-red-400'}`
+      titulo.textContent  = ok ? 'Resposta com sucesso' : 'Erro na resposta'
+      httpLbl.textContent = estado ? `HTTP ${estado}` : 'Erro de rede'
+
+      ultimoJSON   = JSON.stringify(dados, null, 2)
+      saida.innerHTML = realcarJSON(ultimoJSON)
+      painel.classList.remove('hidden')
+      painel.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
+    function ocultarResultado() {
+      document.getElementById('painelResultado').classList.add('hidden')
+    }
+
+    function mostrarErro(msg) {
+      mostrarResultado({ erro: msg }, 0)
+    }
+
+    function copiarJSON() {
+      navigator.clipboard.writeText(ultimoJSON).then(() => {
+        const btn = event.target
+        btn.textContent = 'Copiado!'
+        setTimeout(() => { btn.textContent = 'Copiar JSON' }, 1500)
+      })
+    }
+
+    // ── Realce de sintaxe JSON ─────────────────────────────────
+    function realcarJSON(json) {
+      const escapado = json
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+
+      return escapado.replace(
+        /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*([eE][+-]?\d+)?)/g,
+        match => {
+          if (/^"/.test(match)) {
+            if (/:$/.test(match)) return `<span class="json-chave">${match}</span>`
+            return `<span class="json-texto">${match}</span>`
+          }
+          if (/true|false/.test(match)) return `<span class="json-bool">${match}</span>`
+          if (/null/.test(match))       return `<span class="json-nulo">${match}</span>`
+          return `<span class="json-numero">${match}</span>`
+        }
+      )
+    }
+  </script>
+
+</body>
+</html>

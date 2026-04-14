@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 340" width="920" height="340" font-family="system-ui, -apple-system, sans-serif">
+
+  <!-- Fundo -->
+  <rect width="920" height="340" rx="16" fill="#f8fafc"/>
+
+  <!-- Título -->
+  <text x="460" y="44" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">
+    Leitor de QR Code Fiscal ATCUD — Fluxo de Processamento
+  </text>
+  <text x="460" y="64" text-anchor="middle" font-size="12" fill="#64748b">
+    Documento PDF → Detecção de QR codes → Validação ATCUD → JSON estruturado
+  </text>
+
+  <!-- ── Passo 1: PDF ─────────────────────────────────────────── -->
+  <rect x="30" y="90" width="140" height="170" rx="12" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.5"/>
+  <!-- Ícone PDF -->
+  <rect x="75" y="108" width="50" height="64" rx="4" fill="#fff" stroke="#0284c7" stroke-width="1.5"/>
+  <rect x="75" y="108" width="50" height="18" rx="4" fill="#0284c7"/>
+  <text x="100" y="120" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">PDF</text>
+  <line x1="84" y1="140" x2="116" y2="140" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="84" y1="150" x2="116" y2="150" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="84" y1="160" x2="108" y2="160" stroke="#cbd5e1" stroke-width="1.2"/>
+  <!-- Texto -->
+  <text x="100" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#0369a1">Documento</text>
+  <text x="100" y="212" text-anchor="middle" font-size="13" font-weight="700" fill="#0369a1">PDF</text>
+  <text x="100" y="232" text-anchor="middle" font-size="10" fill="#64748b">Enviado pelo</text>
+  <text x="100" y="245" text-anchor="middle" font-size="10" fill="#64748b">utilizador</text>
+
+  <!-- Seta 1→2 -->
+  <path d="M172 175 L196 175" stroke="#94a3b8" stroke-width="2" marker-end="url(#seta)"/>
+
+  <!-- ── Passo 2: Renderização ───────────────────────────────── -->
+  <rect x="198" y="90" width="140" height="170" rx="12" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.5"/>
+  <!-- Ícone imagem -->
+  <rect x="233" y="108" width="70" height="56" rx="4" fill="#fff" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="233" y="108" width="70" height="56" rx="4" fill="#dcfce7"/>
+  <circle cx="248" cy="122" r="6" fill="#86efac"/>
+  <path d="M233 148 l20-18 14 14 12-8 24 14" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+  <!-- Badge -->
+  <rect x="236" y="156" width="64" height="16" rx="4" fill="#16a34a"/>
+  <text x="268" y="167" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">pdftoppm</text>
+  <!-- Texto -->
+  <text x="268" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#15803d">Renderização</text>
+  <text x="268" y="212" text-anchor="middle" font-size="13" font-weight="700" fill="#15803d">de Páginas</text>
+  <text x="268" y="232" text-anchor="middle" font-size="10" fill="#64748b">PDF → imagens</text>
+  <text x="268" y="245" text-anchor="middle" font-size="10" fill="#64748b">PNG a 200 DPI</text>
+
+  <!-- Seta 2→3 -->
+  <path d="M340 175 L364 175" stroke="#94a3b8" stroke-width="2" marker-end="url(#seta)"/>
+
+  <!-- ── Passo 3: Detecção QR ────────────────────────────────── -->
+  <rect x="366" y="90" width="140" height="170" rx="12" fill="#faf5ff" stroke="#c084fc" stroke-width="1.5"/>
+  <!-- Ícone QR -->
+  <rect x="406" y="106" width="52" height="52" rx="4" fill="#fff" stroke="#9333ea" stroke-width="1.5"/>
+  <rect x="411" y="111" width="16" height="16" rx="2" fill="#9333ea"/>
+  <rect x="431" y="111" width="16" height="16" rx="2" fill="#9333ea"/>
+  <rect x="411" y="131" width="16" height="16" rx="2" fill="#9333ea"/>
+  <rect x="431" y="131" width="7" height="7" rx="1" fill="#9333ea"/>
+  <rect x="442" y="131" width="7" height="7" rx="1" fill="#9333ea"/>
+  <rect x="431" y="142" width="16" height="7" rx="1" fill="#9333ea"/>
+  <!-- Badge -->
+  <rect x="404" y="156" width="56" height="16" rx="4" fill="#9333ea"/>
+  <text x="432" y="167" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">gozxing</text>
+  <!-- Texto -->
+  <text x="436" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#7e22ce">Detecção</text>
+  <text x="436" y="212" text-anchor="middle" font-size="13" font-weight="700" fill="#7e22ce">de QR Codes</text>
+  <text x="436" y="232" text-anchor="middle" font-size="10" fill="#64748b">Todos os QR em</text>
+  <text x="436" y="245" text-anchor="middle" font-size="10" fill="#64748b">todas as páginas</text>
+
+  <!-- Seta 3→4 -->
+  <path d="M508 175 L532 175" stroke="#94a3b8" stroke-width="2" marker-end="url(#seta)"/>
+
+  <!-- ── Passo 4: Validação ATCUD ───────────────────────────── -->
+  <rect x="534" y="90" width="140" height="170" rx="12" fill="#fff7ed" stroke="#fb923c" stroke-width="1.5"/>
+  <!-- Ícone validação -->
+  <circle cx="604" cy="136" r="28" fill="#fff" stroke="#ea580c" stroke-width="1.5"/>
+  <path d="M591 136 l9 10 18-20" fill="none" stroke="#ea580c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Badge -->
+  <rect x="572" y="156" width="64" height="16" rx="4" fill="#ea580c"/>
+  <text x="604" y="167" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Spec AT</text>
+  <!-- Texto -->
+  <text x="604" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">Validação</text>
+  <text x="604" y="212" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">ATCUD</text>
+  <text x="604" y="232" text-anchor="middle" font-size="10" fill="#64748b">Filtra QR codes</text>
+  <text x="604" y="245" text-anchor="middle" font-size="10" fill="#64748b">com ATCUD válido</text>
+
+  <!-- Seta 4→5 -->
+  <path d="M676 175 L700 175" stroke="#94a3b8" stroke-width="2" marker-end="url(#seta)"/>
+
+  <!-- ── Passo 5: JSON ───────────────────────────────────────── -->
+  <rect x="702" y="90" width="188" height="170" rx="12" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5"/>
+  <!-- Ícone JSON (código) -->
+  <rect x="740" y="106" width="112" height="56" rx="4" fill="#1e293b"/>
+  <text x="748" y="123" font-size="9" font-family="monospace" fill="#38bdf8">"emitente":</text>
+  <text x="756" y="135" font-size="9" font-family="monospace" fill="#4ade80">{ "nif": "500..." }</text>
+  <text x="748" y="147" font-size="9" font-family="monospace" fill="#38bdf8">"atcud":</text>
+  <text x="756" y="158" font-size="9" font-family="monospace" fill="#facc15">"J66S9FDD-659"</text>
+  <!-- Texto -->
+  <text x="796" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">Resposta JSON</text>
+  <text x="796" y="212" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">Estruturada</text>
+  <text x="796" y="232" text-anchor="middle" font-size="10" fill="#64748b">NIF · Tipo · ATCUD</text>
+  <text x="796" y="245" text-anchor="middle" font-size="10" fill="#64748b">IVA · Totais · ...</text>
+
+  <!-- Linha de numeração dos passos -->
+  <text x="100" y="278" text-anchor="middle" font-size="11" fill="#94a3b8">① Upload</text>
+  <text x="268" y="278" text-anchor="middle" font-size="11" fill="#94a3b8">② Render</text>
+  <text x="436" y="278" text-anchor="middle" font-size="11" fill="#94a3b8">③ Scan</text>
+  <text x="604" y="278" text-anchor="middle" font-size="11" fill="#94a3b8">④ Validar</text>
+  <text x="796" y="278" text-anchor="middle" font-size="11" fill="#94a3b8">⑤ Resposta</text>
+
+  <!-- Rodapé -->
+  <text x="460" y="315" text-anchor="middle" font-size="10" fill="#cbd5e1">
+    Leitor de QR Code Fiscal ATCUD · ricardo.grangeia.pt · Licença MIT
+  </text>
+
+  <!-- Marcador de seta -->
+  <defs>
+    <marker id="seta" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+</svg>
