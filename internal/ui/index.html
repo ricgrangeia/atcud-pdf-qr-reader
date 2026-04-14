@@ -229,7 +229,6 @@
     <div class="border-t border-gray-200 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
       <div class="flex items-center gap-4">
         <span>Versão <span id="rodape-versao" class="font-mono text-gray-500">—</span></span>
-        <span>Actualizado em <span id="rodape-data" class="text-gray-500">—</span></span>
       </div>
       <div class="flex items-center gap-1">
         <span>Desenvolvido por</span>
@@ -251,8 +250,6 @@
       .then(r => r.json())
       .then(v => {
         document.getElementById('rodape-versao').textContent = v.version
-        document.getElementById('rodape-data').textContent   =
-          new Date(v.last_updated).toLocaleDateString('pt-PT', { day:'2-digit', month:'long', year:'numeric' })
       })
       .catch(() => {})
 

@@ -7,7 +7,6 @@ import "os"
 // pelo endpoint GET /api/v1/version.
 const (
 	AppVersion  = "1.0.0"
-	LastUpdated = "2026-04-14"
 	Author      = "Ricardo Grangeia"
 	AuthorURL   = "https://ricardo.grangeia.pt"
 )
