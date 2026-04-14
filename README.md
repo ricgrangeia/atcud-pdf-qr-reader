@@ -18,6 +18,17 @@ Serviço HTTP escrito em Go para leitura e descodificação de **QR codes ATCUD*
 
 ---
 
+## Privacidade e segurança dos ficheiros
+
+**Nenhum ficheiro PDF fica guardado no servidor.** O ciclo de vida de um documento enviado é o seguinte:
+
+1. O PDF recebido é escrito num ficheiro temporário do sistema operativo (`os.CreateTemp`) — [`internal/infrastructure/pdf/scanner.go`](internal/infrastructure/pdf/scanner.go)
+2. As páginas são renderizadas para imagens PNG numa pasta temporária — [`internal/infrastructure/pdf/renderer.go`](internal/infrastructure/pdf/renderer.go)
+3. Após a extracção dos QR codes, ambos são apagados imediatamente via `defer os.Remove` e `defer os.RemoveAll`, ainda durante o tratamento do pedido HTTP
+4. Os dados transitam apenas em memória — o servidor nunca persiste nem regista o conteúdo dos documentos
+
+---
+
 ## Infográfico
 
 ![Fluxo de processamento](infographic.svg)
