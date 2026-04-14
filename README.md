@@ -172,11 +172,6 @@ O `docker-compose.yml` usa variáveis de ambiente explícitas, compatíveis com 
 3. Na secção **Environment variables**, preencher os valores
 4. Clicar em **Deploy the stack**
 
-> A rede `proxy-network` deve existir previamente no Docker. Criar com:
-> ```bash
-> docker network create proxy-network
-> ```
-
 ---
 
 ## Tecnologias utilizadas
