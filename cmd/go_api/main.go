@@ -19,8 +19,8 @@ func main() {
 	cfg := config.Load()
 
 	log.Printf("Starting GoApi on port %s", cfg.Port)
-	log.Printf("Swagger UI → http://localhost:%s/docs", cfg.Port)
-	log.Printf("OpenAPI spec → http://localhost:%s/openapi.json", cfg.Port)
+	log.Printf("Swagger UI → https://%s/docs", cfg.URLHostDomain)
+	log.Printf("OpenAPI spec → https://%s/openapi.json", cfg.URLHostDomain)
 
 	router := appHTTP.NewRouter()
 

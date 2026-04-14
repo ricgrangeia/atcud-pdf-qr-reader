@@ -17,6 +17,9 @@ type Config struct {
 	// Port is the TCP port the HTTP server listens on.
 	Port string
 
+	// URLHostDomain is the public domain name of the service (e.g. example.com).
+	URLHostDomain string
+
 	// VLLMBaseURL is the base URL of the vLLM-compatible OpenAI endpoint.
 	// Available for AI-assisted processing if needed in the future.
 	VLLMBaseURL string
@@ -36,10 +39,16 @@ func Load() *Config {
 		port = "8080"
 	}
 
+	domain := os.Getenv("URL_HOST_DOMAIN")
+	if domain == "" {
+		domain = "localhost"
+	}
+
 	return &Config{
-		Port:        port,
-		VLLMBaseURL: os.Getenv("VLLM_BASE_URL"),
-		VLLMAPIKey:  os.Getenv("VLLM_API_KEY"),
-		VLLMModel:   os.Getenv("VLLM_MODEL"),
+		Port:          port,
+		URLHostDomain: domain,
+		VLLMBaseURL:   os.Getenv("VLLM_BASE_URL"),
+		VLLMAPIKey:    os.Getenv("VLLM_API_KEY"),
+		VLLMModel:     os.Getenv("VLLM_MODEL"),
 	}
 }
