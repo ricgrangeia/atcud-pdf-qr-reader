@@ -27,13 +27,13 @@ services:
     labels:
       # Activar Traefik para este contentor
       - "traefik.enable=true"
-      # Router HTTPS — serve qrcode.appa8.com com TLS
-      - "traefik.http.routers.go-api-app.rule=Host(`qrcode.appa8.com`)"
+      # Router HTTPS — serve domain com TLS
+      - "traefik.http.routers.go-api-app.rule=Host(`${URL_HOST_DOMAIN}`)"
       - "traefik.http.routers.go-api-app.entrypoints=websecure"
       - "traefik.http.routers.go-api-app.tls=true"
       - "traefik.http.routers.go-api-app.tls.certresolver=letsencrypt"
       # Router HTTP — redireciona automaticamente para HTTPS
-      - "traefik.http.routers.go-api-app-http.rule=Host(`qrcode.appa8.com`)"
+      - "traefik.http.routers.go-api-app-http.rule=Host(`${URL_HOST_DOMAIN}`)"
       - "traefik.http.routers.go-api-app-http.entrypoints=web"
       - "traefik.http.routers.go-api-app-http.middlewares=redirect-https"
       # Middleware de redireccionamento HTTP → HTTPS
