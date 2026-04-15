@@ -24,7 +24,7 @@ func ParsePDFEnrichedHandler(service *appDocument.ScanService, cfg *appConfig.Co
 			return nil, huma.Error422UnprocessableEntity("failed to process the PDF", err)
 		}
 		enrichParseResult(ctx, cfg, result)
-		counter.Increment()
+		counter.Increment(sourceFromContext(ctx))
 		return &ParseOutput{Body: result}, nil
 	}
 }
@@ -41,7 +41,7 @@ func ParseImageEnrichedHandler(service *appDocument.ScanService, cfg *appConfig.
 			return nil, huma.Error422UnprocessableEntity("failed to process the image", err)
 		}
 		enrichParseResult(ctx, cfg, result)
-		counter.Increment()
+		counter.Increment(sourceFromContext(ctx))
 		return &ParseOutput{Body: result}, nil
 	}
 }

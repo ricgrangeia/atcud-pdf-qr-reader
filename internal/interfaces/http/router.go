@@ -23,9 +23,13 @@ type versionBody struct {
 
 // statsBody é o shape da resposta de GET /api/v1/stats.
 type statsBody struct {
-	Total     int64  `json:"total"      doc:"Total de documentos analisados desde sempre"`
-	ThisMonth int64  `json:"this_month" doc:"Documentos analisados no mês corrente"`
-	Month     string `json:"month"      doc:"Mês corrente no formato AAAA-MM"`
+	Total          int64            `json:"total"             doc:"Total de documentos analisados desde sempre"`
+	ThisMonth      int64            `json:"this_month"        doc:"Documentos analisados no mês corrente"`
+	ThisMonthWeb   int64            `json:"this_month_web"    doc:"Documentos analisados no mês corrente via página web"`
+	ThisMonthApp   int64            `json:"this_month_app"    doc:"Documentos analisados no mês corrente via app Android"`
+	ThisMonthOther int64            `json:"this_month_other"  doc:"Documentos analisados no mês corrente por outros clientes (API directa)"`
+	Month          string           `json:"month"             doc:"Mês corrente no formato AAAA-MM"`
+	Sources        map[string]int64 `json:"sources"           doc:"Totais históricos por cliente (web, android, api)"`
 }
 
 // NewRouter creates the Gin engine, wraps it with Huma, and registers all routes.
@@ -33,6 +37,7 @@ func NewRouter(cfg *appConfig.Config, counter *stats.Counter) *gin.Engine {
 	router := gin.Default()
 	router.SetTrustedProxies([]string{"172.16.0.0/12"}) // Docker bridge range — covers the Traefik proxy network
 	router.MaxMultipartMemory = 32 << 20                 // 32 MB max upload size
+	router.Use(clientSourceMiddleware())
 
 	humaConfig := huma.DefaultConfig("GoApi — Leitor de QR Code Fiscal ATCUD", appConfig.AppVersion)
 	humaConfig.Info.Description = "Recebe um PDF ou imagem, extrai todos os QR codes e devolve os que contêm um código ATCUD fiscal português."
@@ -87,11 +92,15 @@ func NewRouter(cfg *appConfig.Config, counter *stats.Counter) *gin.Engine {
 		Summary:     "Estatísticas de utilização",
 		Tags:        []string{"info"},
 	}, func(ctx context.Context, _ *struct{}) (*struct{ Body statsBody }, error) {
-		total, thisMonth, month := counter.Stats()
+		s := counter.Stats()
 		return &struct{ Body statsBody }{Body: statsBody{
-			Total:     total,
-			ThisMonth: thisMonth,
-			Month:     month,
+			Total:          s.Total,
+			ThisMonth:      s.ThisMonth,
+			ThisMonthWeb:   s.ThisMonthWeb,
+			ThisMonthApp:   s.ThisMonthApp,
+			ThisMonthOther: s.ThisMonthOther,
+			Month:          s.Month,
+			Sources:        s.Sources,
 		}}, nil
 	})
 

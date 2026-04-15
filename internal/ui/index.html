@@ -100,6 +100,7 @@
           <span>
             <span id="stats-mes" class="font-semibold text-gray-600">—</span>
             doc. este mês
+            <span id="stats-mes-breakdown" class="text-gray-400"></span>
           </span>
           <span>
             <span id="stats-total" class="font-semibold text-gray-600">—</span>
@@ -317,6 +318,15 @@
         .then(s => {
           document.getElementById('stats-mes').textContent   = s.this_month.toLocaleString('pt-PT')
           document.getElementById('stats-total').textContent = s.total.toLocaleString('pt-PT')
+          // Show web/app breakdown when both have data
+          const web = s.this_month_web || 0
+          const app = s.this_month_app || 0
+          const breakdown = document.getElementById('stats-mes-breakdown')
+          if (web > 0 || app > 0) {
+            breakdown.textContent = `(${web} web / ${app} app)`
+          } else {
+            breakdown.textContent = ''
+          }
         })
         .catch(() => {})
     }
@@ -402,7 +412,7 @@
       corpo.append('file', ficheiroSeleccionado)
 
       try {
-        const res  = await fetch(endpoint, { method: 'POST', body: corpo })
+        const res  = await fetch(endpoint, { method: 'POST', body: corpo, headers: { 'X-Client': 'web' } })
         const data = await res.json()
         mostrarResultado(data, res.status)
       } catch (erro) {
@@ -487,7 +497,7 @@
       try {
         const res = await fetch('/api/v1/nif/lookup/bulk', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-Client': 'web' },
           body: JSON.stringify({ nifs })
         })
         const data = await res.json()

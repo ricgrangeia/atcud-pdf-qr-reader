@@ -58,7 +58,7 @@ func ScanPDFHandler(service *appDocument.ScanService, counter *stats.Counter) fu
 		if err != nil {
 			return nil, huma.Error422UnprocessableEntity("failed to process the PDF", err)
 		}
-		counter.Increment()
+		counter.Increment(sourceFromContext(ctx))
 		return &ScanOutput{Body: result}, nil
 	}
 }
@@ -73,7 +73,7 @@ func ParsePDFHandler(service *appDocument.ScanService, counter *stats.Counter) f
 		if err != nil {
 			return nil, huma.Error422UnprocessableEntity("failed to process the PDF", err)
 		}
-		counter.Increment()
+		counter.Increment(sourceFromContext(ctx))
 		return &ParseOutput{Body: result}, nil
 	}
 }
@@ -90,7 +90,7 @@ func ScanImageHandler(service *appDocument.ScanService, counter *stats.Counter) 
 		if err != nil {
 			return nil, huma.Error422UnprocessableEntity("failed to process the image", err)
 		}
-		counter.Increment()
+		counter.Increment(sourceFromContext(ctx))
 		return &ScanOutput{Body: result}, nil
 	}
 }
@@ -105,7 +105,7 @@ func ParseImageHandler(service *appDocument.ScanService, counter *stats.Counter)
 		if err != nil {
 			return nil, huma.Error422UnprocessableEntity("failed to process the image", err)
 		}
-		counter.Increment()
+		counter.Increment(sourceFromContext(ctx))
 		return &ParseOutput{Body: result}, nil
 	}
 }
