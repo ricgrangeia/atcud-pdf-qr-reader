@@ -105,6 +105,7 @@
           <span>
             <span id="stats-total" class="font-semibold text-gray-600">—</span>
             no total
+            <span id="stats-total-breakdown" class="text-gray-400"></span>
           </span>
         </div>
         <a href="/docs" target="_blank" rel="noopener noreferrer"
@@ -318,14 +319,25 @@
         .then(s => {
           document.getElementById('stats-mes').textContent   = s.this_month.toLocaleString('pt-PT')
           document.getElementById('stats-total').textContent = s.total.toLocaleString('pt-PT')
-          // Show web/app breakdown when both have data
-          const web = s.this_month_web || 0
-          const app = s.this_month_app || 0
-          const breakdown = document.getElementById('stats-mes-breakdown')
-          if (web > 0 || app > 0) {
-            breakdown.textContent = `(${web} web / ${app} app)`
+          // Monthly breakdown
+          const web    = s.this_month_web   || 0
+          const app    = s.this_month_app   || 0
+          const other  = s.this_month_other || 0
+          const breakdownMes = document.getElementById('stats-mes-breakdown')
+          if (web > 0 || app > 0 || other > 0) {
+            breakdownMes.textContent = `(${web} web / ${app} app / ${other} api)`
           } else {
-            breakdown.textContent = ''
+            breakdownMes.textContent = ''
+          }
+          // All-time breakdown
+          const totalWeb   = (s.sources && s.sources.web)     || 0
+          const totalApp   = (s.sources && s.sources.android) || 0
+          const totalOther = (s.sources && s.sources.api)     || 0
+          const breakdownTotal = document.getElementById('stats-total-breakdown')
+          if (totalWeb > 0 || totalApp > 0 || totalOther > 0) {
+            breakdownTotal.textContent = `(${totalWeb.toLocaleString('pt-PT')} web / ${totalApp.toLocaleString('pt-PT')} app / ${totalOther.toLocaleString('pt-PT')} api)`
+          } else {
+            breakdownTotal.textContent = ''
           }
         })
         .catch(() => {})
