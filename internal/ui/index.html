@@ -326,7 +326,7 @@
           const breakdownMes = document.getElementById('stats-mes-breakdown')
           if (web > 0 || app > 0 || semFonteMes > 0) {
             let parts = `${web} web / ${app} app`
-            if (semFonteMes > 0) parts += ` / ${semFonteMes} s/fonte`
+            if (semFonteMes > 0) parts += ` / ${semFonteMes} api`
             breakdownMes.textContent = `(${parts})`
           } else {
             breakdownMes.textContent = ''
@@ -340,7 +340,7 @@
           const breakdownTotal = document.getElementById('stats-total-breakdown')
           if (totalWeb > 0 || totalApp > 0 || totalSemFonte > 0) {
             let parts = `${totalWeb.toLocaleString('pt-PT')} web / ${totalApp.toLocaleString('pt-PT')} app`
-            if (totalSemFonte > 0) parts += ` / ${totalSemFonte.toLocaleString('pt-PT')} s/fonte`
+            if (totalSemFonte > 0) parts += ` / ${totalSemFonte.toLocaleString('pt-PT')} api`
             breakdownTotal.textContent = `(${parts})`
           } else {
             breakdownTotal.textContent = ''
