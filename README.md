@@ -123,12 +123,12 @@ internal/
 ```json
 {
   "emitente": {
-    "descricao": "EDP COMERCIAL - COMERCIALIZAÇÃO DE ENERGIA, S.A.",
-    "nif": "503504564"
+    "descricao": "EMPRESA NOME",
+    "nif": "501104511"
   },
   "adquirente": {
-    "descricao": "ESCRITA GULOSA",
-    "nif": "513830146",
+    "descricao": "EMPRESA NOME",
+    "nif": "533840506",
     "pais": "PT"
   }
 }
