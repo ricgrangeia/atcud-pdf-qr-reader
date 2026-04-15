@@ -320,22 +320,28 @@
           document.getElementById('stats-mes').textContent   = s.this_month.toLocaleString('pt-PT')
           document.getElementById('stats-total').textContent = s.total.toLocaleString('pt-PT')
           // Monthly breakdown
-          const web    = s.this_month_web   || 0
-          const app    = s.this_month_app   || 0
-          const other  = s.this_month_other || 0
+          const web         = s.this_month_web   || 0
+          const app         = s.this_month_app   || 0
+          const semFonteMes = s.this_month_other || 0
           const breakdownMes = document.getElementById('stats-mes-breakdown')
-          if (web > 0 || app > 0 || other > 0) {
-            breakdownMes.textContent = `(${web} web / ${app} app / ${other} api)`
+          if (web > 0 || app > 0 || semFonteMes > 0) {
+            let parts = `${web} web / ${app} app`
+            if (semFonteMes > 0) parts += ` / ${semFonteMes} s/fonte`
+            breakdownMes.textContent = `(${parts})`
           } else {
             breakdownMes.textContent = ''
           }
           // All-time breakdown
-          const totalWeb   = (s.sources && s.sources.web)     || 0
-          const totalApp   = (s.sources && s.sources.android) || 0
-          const totalOther = (s.sources && s.sources.api)     || 0
+          const totalWeb      = (s.sources && s.sources.web)     || 0
+          const totalApp      = (s.sources && s.sources.android) || 0
+          const totalApi      = (s.sources && s.sources.api)     || 0
+          const totalUnknown  = s.total - (totalWeb + totalApp + totalApi)
+          const totalSemFonte = totalApi + (totalUnknown > 0 ? totalUnknown : 0)
           const breakdownTotal = document.getElementById('stats-total-breakdown')
-          if (totalWeb > 0 || totalApp > 0 || totalOther > 0) {
-            breakdownTotal.textContent = `(${totalWeb.toLocaleString('pt-PT')} web / ${totalApp.toLocaleString('pt-PT')} app / ${totalOther.toLocaleString('pt-PT')} api)`
+          if (totalWeb > 0 || totalApp > 0 || totalSemFonte > 0) {
+            let parts = `${totalWeb.toLocaleString('pt-PT')} web / ${totalApp.toLocaleString('pt-PT')} app`
+            if (totalSemFonte > 0) parts += ` / ${totalSemFonte.toLocaleString('pt-PT')} s/fonte`
+            breakdownTotal.textContent = `(${parts})`
           } else {
             breakdownTotal.textContent = ''
           }
