@@ -30,8 +30,8 @@ func renderPagesToImages(pdfPath string) (pages []string, cleanup func(), err er
 
 	// pdftoppm flags:
 	//   -png       → output PNG images
-	//   -r 200     → 200 DPI (good for QR code detection)
-	cmd := exec.Command("pdftoppm", "-png", "-r", "200", pdfPath, outputPrefix)
+	//   -r 300     → 300 DPI — needed for documents with many small QR codes (e.g. Via Verde)
+	cmd := exec.Command("pdftoppm", "-png", "-r", "300", pdfPath, outputPrefix)
 	if out, cmdErr := cmd.CombinedOutput(); cmdErr != nil {
 		cleanup()
 		return nil, nil, fmt.Errorf(
