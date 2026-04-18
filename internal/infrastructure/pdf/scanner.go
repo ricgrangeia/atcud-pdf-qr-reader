@@ -9,15 +9,11 @@ import (
 	_ "image/png"  // register PNG decoder
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 
 	"github.com/makiuchi-d/gozxing"
 	qrmulti "github.com/makiuchi-d/gozxing/multi/qrcode"
 )
-
-// atcudTextRe matches "ATCUD: XXXX-NNNN" in plain text extracted from a PDF.
-var atcudTextRe = regexp.MustCompile(`ATCUD:\s*[A-Z0-9]+-\d+`)
 
 // RawQRCode is the output of the scanner: the decoded text and which page it came from.
 // The application layer turns this into a domain QRCode after applying business rules.
@@ -76,39 +72,11 @@ func ExtractQRCodes(pdfBytes []byte) ([]RawQRCode, error) {
 
 	// Text fallback: some PDFs (e.g. Via Verde) embed ATCUD as plain text alongside
 	// QR code images that ZXing cannot decode. pdftotext (poppler-utils) extracts the
-	// text layer and lets us find ATCUDs that image scanning missed.
+	// text layer and reconstructs AT-format strings where possible.
 	textResults := extractATCUDsFromText(tmpFile.Name())
 	results = append(results, textResults...)
 
 	return results, nil
-}
-
-// extractATCUDsFromText uses pdftotext to read the PDF text layer and returns one
-// RawQRCode per line that contains an "ATCUD: CODE-NUM" pattern.
-// This is a best-effort fallback — errors are silently ignored.
-func extractATCUDsFromText(pdfPath string) []RawQRCode {
-	out, err := exec.Command("pdftotext", "-layout", pdfPath, "-").Output()
-	if err != nil {
-		return nil
-	}
-
-	var results []RawQRCode
-	// pdftotext separates pages with a form-feed character.
-	for pageIdx, pageText := range strings.Split(string(out), "\f") {
-		if strings.TrimSpace(pageText) == "" {
-			continue
-		}
-		pageNumber := pageIdx + 1
-		for _, line := range strings.Split(pageText, "\n") {
-			if atcudTextRe.MatchString(line) {
-				results = append(results, RawQRCode{
-					Content:    strings.TrimSpace(line),
-					PageNumber: pageNumber,
-				})
-			}
-		}
-	}
-	return results
 }
 
 // ExtractQRCodesFromImage scans a single image (JPEG, PNG, GIF, …) for QR codes
@@ -130,7 +98,8 @@ func ExtractQRCodesFromImage(imageBytes []byte) ([]RawQRCode, error) {
 	return results, nil
 }
 
-// scanImageForQRCodes finds every QR code in one image file and returns their decoded text.
+// scanImageForQRCodes finds every QR code in one image file.
+// It tries gozxing first; if nothing is found it falls back to zbarimg.
 func scanImageForQRCodes(imagePath string) ([]string, error) {
 	f, err := os.Open(imagePath)
 	if err != nil {
@@ -143,7 +112,13 @@ func scanImageForQRCodes(imagePath string) ([]string, error) {
 		return nil, fmt.Errorf("decoding image %s: %w", imagePath, err)
 	}
 
-	return scanBitmap(img)
+	texts, err := scanBitmap(img)
+	if err != nil || len(texts) > 0 {
+		return texts, err
+	}
+
+	// gozxing found nothing — try zbarimg (handles more QR code variants).
+	return zbarimgScan(imagePath)
 }
 
 // decodeQRCodesFromBytes decodes QR codes directly from raw image bytes without a temp file.
@@ -182,4 +157,21 @@ func scanBitmap(img image.Image) ([]string, error) {
 		texts = append(texts, result.GetText())
 	}
 	return texts, nil
+}
+
+// zbarimgScan uses the zbarimg CLI (zbar-tools) to decode QR codes from an image file.
+// This is a fallback for QR codes that gozxing cannot decode.
+func zbarimgScan(imagePath string) ([]string, error) {
+	out, err := exec.Command("zbarimg", "--raw", "-q", imagePath).Output()
+	if err != nil {
+		// exit code 4 means no barcodes found — not an error.
+		return nil, nil
+	}
+	var results []string
+	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		if line = strings.TrimSpace(line); line != "" {
+			results = append(results, line)
+		}
+	}
+	return results, nil
 }

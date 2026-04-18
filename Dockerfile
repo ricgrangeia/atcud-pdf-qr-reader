@@ -23,12 +23,14 @@ RUN go build -ldflags="-w -s" -o /app/server ./cmd/go_api
 
 FROM ubuntu:jammy AS runtime
 
-# poppler-utils provides pdftoppm, used to render PDF pages to PNG images.
-# ca-certificates is needed for HTTPS calls (e.g. to the vLLM service).
+# poppler-utils  — pdftoppm renders PDF pages to PNG for QR scanning
+# zbar-tools     — zbarimg decodes QR codes when gozxing fails (e.g. Via Verde)
+# ca-certificates — needed for HTTPS calls to the vLLM service
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         poppler-utils \
+        zbar-tools \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
