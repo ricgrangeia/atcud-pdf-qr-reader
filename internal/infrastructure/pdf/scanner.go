@@ -8,10 +8,16 @@ import (
 	_ "image/jpeg" // register JPEG decoder
 	_ "image/png"  // register PNG decoder
 	"os"
+	"os/exec"
+	"regexp"
+	"strings"
 
 	"github.com/makiuchi-d/gozxing"
 	qrmulti "github.com/makiuchi-d/gozxing/multi/qrcode"
 )
+
+// atcudTextRe matches "ATCUD: XXXX-NNNN" in plain text extracted from a PDF.
+var atcudTextRe = regexp.MustCompile(`ATCUD:\s*[A-Z0-9]+-\d+`)
 
 // RawQRCode is the output of the scanner: the decoded text and which page it came from.
 // The application layer turns this into a domain QRCode after applying business rules.
@@ -68,7 +74,41 @@ func ExtractQRCodes(pdfBytes []byte) ([]RawQRCode, error) {
 		}
 	}
 
+	// Text fallback: some PDFs (e.g. Via Verde) embed ATCUD as plain text alongside
+	// QR code images that ZXing cannot decode. pdftotext (poppler-utils) extracts the
+	// text layer and lets us find ATCUDs that image scanning missed.
+	textResults := extractATCUDsFromText(tmpFile.Name())
+	results = append(results, textResults...)
+
 	return results, nil
+}
+
+// extractATCUDsFromText uses pdftotext to read the PDF text layer and returns one
+// RawQRCode per line that contains an "ATCUD: CODE-NUM" pattern.
+// This is a best-effort fallback — errors are silently ignored.
+func extractATCUDsFromText(pdfPath string) []RawQRCode {
+	out, err := exec.Command("pdftotext", "-layout", pdfPath, "-").Output()
+	if err != nil {
+		return nil
+	}
+
+	var results []RawQRCode
+	// pdftotext separates pages with a form-feed character.
+	for pageIdx, pageText := range strings.Split(string(out), "\f") {
+		if strings.TrimSpace(pageText) == "" {
+			continue
+		}
+		pageNumber := pageIdx + 1
+		for _, line := range strings.Split(pageText, "\n") {
+			if atcudTextRe.MatchString(line) {
+				results = append(results, RawQRCode{
+					Content:    strings.TrimSpace(line),
+					PageNumber: pageNumber,
+				})
+			}
+		}
+	}
+	return results
 }
 
 // ExtractQRCodesFromImage scans a single image (JPEG, PNG, GIF, …) for QR codes

@@ -63,17 +63,22 @@ func (s *ScanService) ScanPDF(pdfBytes []byte) (*ScanResult, error) {
 		QRCodes:      make([]domain.QRCode, 0),
 	}
 
+	seen := make(map[string]struct{})
 	for _, r := range raw {
 		atcud, hasATCUD := domain.DetectATCUD(r.Content)
-
-		if hasATCUD {
-			result.QRCodes = append(result.QRCodes, domain.QRCode{
-				Content:    r.Content,
-				PageNumber: r.PageNumber,
-				HasATCUD:   true,
-				ATCUD:      atcud,
-			})
+		if !hasATCUD {
+			continue
 		}
+		if _, dup := seen[atcud]; dup {
+			continue
+		}
+		seen[atcud] = struct{}{}
+		result.QRCodes = append(result.QRCodes, domain.QRCode{
+			Content:    r.Content,
+			PageNumber: r.PageNumber,
+			HasATCUD:   true,
+			ATCUD:      atcud,
+		})
 	}
 
 	result.ATCUDCount = len(result.QRCodes)
@@ -169,11 +174,16 @@ func (s *ScanService) ParsePDF(pdfBytes []byte) (*ParseResult, error) {
 		Documents:    make([]domain.ParsedQRCode, 0),
 	}
 
+	seen := make(map[string]struct{})
 	for _, r := range raw {
-		// Only parse QR codes that contain an ATCUD — skip decorative/other QR codes.
-		if _, hasATCUD := domain.DetectATCUD(r.Content); !hasATCUD {
+		atcud, hasATCUD := domain.DetectATCUD(r.Content)
+		if !hasATCUD {
 			continue
 		}
+		if _, dup := seen[atcud]; dup {
+			continue
+		}
+		seen[atcud] = struct{}{}
 
 		parsed, err := domain.ParseQRCode(r.Content)
 		if err != nil {
