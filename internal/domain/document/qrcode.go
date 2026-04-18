@@ -16,4 +16,5 @@ type QRCode struct {
 	// ATCUD is the extracted ATCUD value (e.g. "ABCD1234-1").
 	// Empty when HasATCUD is false.
 	ATCUD string `json:"atcud,omitempty"`
+
 }
