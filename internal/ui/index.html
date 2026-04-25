@@ -146,7 +146,7 @@
       <!-- Selector de modo -->
       <div>
         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">O que pretende fazer?</p>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
           <button data-modo="parse" onclick="seleccionarModo('parse')"
                   class="botao-modo border-2 rounded-lg p-4 text-left transition-all
@@ -165,6 +165,16 @@
             <p class="text-xs text-gray-500 mt-1">
               Igual ao anterior mas identifica automaticamente o nome do emitente
               e do adquirente via serviço de NIF por IA
+            </p>
+          </button>
+
+          <button data-modo="full" onclick="seleccionarModo('full')"
+                  class="botao-modo border-2 rounded-lg p-4 text-left transition-all
+                         border-gray-200 hover:border-gray-300">
+            <p class="font-semibold text-sm text-gray-700">Análise completa (AI)</p>
+            <p class="text-xs text-gray-500 mt-1">
+              Cabeçalhos da fatura + vendedor + comprador + totais + linhas de itens
+              extraídos por IA num único JSON (apenas PDF)
             </p>
           </button>
 
@@ -422,11 +432,22 @@
     async function analisar() {
       if (!ficheiroSeleccionado) return
 
-      const prefixo = isPDF(ficheiroSeleccionado) ? '/api/v1/document' : '/api/v1/image'
-      const sufixo  = modoSeleccionado === 'parse'          ? '/parse'
-                    : modoSeleccionado === 'parse-enriched' ? '/parse/enriched'
-                    : '/scan'
-      const endpoint = prefixo + sufixo
+      // "full" mode is PDF-only.
+      if (modoSeleccionado === 'full' && !isPDF(ficheiroSeleccionado)) {
+        mostrarErro('A análise completa (AI) requer um ficheiro PDF.')
+        return
+      }
+
+      let endpoint
+      if (modoSeleccionado === 'full') {
+        endpoint = '/api/v1/document/full'
+      } else {
+        const prefixo = isPDF(ficheiroSeleccionado) ? '/api/v1/document' : '/api/v1/image'
+        const sufixo  = modoSeleccionado === 'parse'          ? '/parse'
+                      : modoSeleccionado === 'parse-enriched' ? '/parse/enriched'
+                      : '/scan'
+        endpoint = prefixo + sufixo
+      }
 
       definirCarregamento(true)
       ocultarResultado()

@@ -186,6 +186,18 @@ func NewRouter(cfg *appConfig.Config, counter *stats.Counter) *gin.Engine {
 		Tags: []string{"documento"},
 	}, ItemsHandler(cfg, counter))
 
+	// POST /api/v1/document/full
+	huma.Register(api, huma.Operation{
+		OperationID: "full-invoice",
+		Method:      http.MethodPost,
+		Path:        "/api/v1/document/full",
+		Summary:     "Análise completa de fatura por IA",
+		Description: "Envia o PDF aos serviços externos de extracção de fatura e de itens em paralelo, " +
+			"e devolve um JSON combinado com todos os dados: cabeçalhos, vendedor, comprador, totais, " +
+			"datas, ATCUD, linhas de itens com colunas e valores.",
+		Tags: []string{"documento"},
+	}, FullInvoiceHandler(cfg, counter))
+
 	// POST /api/v1/nif/lookup/bulk
 	huma.Register(api, huma.Operation{
 		OperationID: "nif-lookup-bulk",
