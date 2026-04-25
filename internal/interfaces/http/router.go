@@ -196,7 +196,7 @@ func NewRouter(cfg *appConfig.Config, counter *stats.Counter) *gin.Engine {
 			"e devolve um JSON combinado com todos os dados: cabeçalhos, vendedor, comprador, totais, " +
 			"datas, ATCUD, linhas de itens com colunas e valores.",
 		Tags: []string{"documento"},
-	}, FullInvoiceHandler(cfg, counter))
+	}, FullInvoiceHandler(docService, cfg, counter))
 
 	// POST /api/v1/nif/lookup/bulk
 	huma.Register(api, huma.Operation{

@@ -11,16 +11,15 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 
+	appDocument "cmd/go-api/internal/application/document"
 	appConfig "cmd/go-api/internal/config"
 	"cmd/go-api/internal/infrastructure/stats"
 )
 
-// FullInvoiceBody is the merged response of /api/v1/document/full.
-// `invoice` contains the full invoice extraction (QR + payment data, headers, totals,
-// seller, buyer, dates, etc.). `items` contains only the line-items table.
+// FullInvoiceBody merges the enriched QR parse result with the line-items table.
 type FullInvoiceBody struct {
-	Invoice json.RawMessage `json:"invoice" doc:"Dados completos da fatura (cabeçalhos, totais, vendedor, comprador) extraídos via /tools/pdf/invoice/decode-upload"`
-	Items   ItemsBody       `json:"items"   doc:"Linhas da tabela de itens extraídas via /tools/pdf/items/decode-upload"`
+	Invoice *appDocument.ParseResult `json:"invoice" doc:"Dados da fatura descodificados do QR code, com nomes de emitente e adquirente identificados por IA (mesma estrutura de /api/v1/document/parse/enriched)"`
+	Items   ItemsBody                `json:"items"   doc:"Linhas da tabela de itens extraídas por IA (apenas colunas e linhas)"`
 }
 
 // FullInvoiceOutput wraps FullInvoiceBody for Huma.
@@ -28,9 +27,9 @@ type FullInvoiceOutput struct {
 	Body FullInvoiceBody
 }
 
-// FullInvoiceHandler proxies a PDF to the tool server's invoice + items extractors in
-// parallel and returns a merged JSON response.
-func FullInvoiceHandler(cfg *appConfig.Config, counter *stats.Counter) func(context.Context, *ParseInput) (*FullInvoiceOutput, error) {
+// FullInvoiceHandler runs the enriched QR parse and the items extractor in parallel,
+// then returns a single combined JSON response.
+func FullInvoiceHandler(service *appDocument.ScanService, cfg *appConfig.Config, counter *stats.Counter) func(context.Context, *ParseInput) (*FullInvoiceOutput, error) {
 	return func(ctx context.Context, input *ParseInput) (*FullInvoiceOutput, error) {
 		if cfg.ToolServerURL == "" {
 			return nil, huma.Error503ServiceUnavailable("full invoice extraction requires TOOL_SERVER_URL to be configured")
@@ -41,33 +40,38 @@ func FullInvoiceHandler(cfg *appConfig.Config, counter *stats.Counter) func(cont
 			return nil, huma.Error422UnprocessableEntity("could not read the uploaded file", fmt.Errorf("io.ReadAll: %w", err))
 		}
 
-		type result struct {
-			kind string
+		type parseResult struct {
+			result *appDocument.ParseResult
+			err    error
+		}
+		type itemsResult struct {
 			data []byte
 			err  error
 		}
-		ch := make(chan result, 2)
+
+		parseCh := make(chan parseResult, 1)
+		itemsCh := make(chan itemsResult, 1)
 
 		go func() {
-			data, err := callToolServerUpload(ctx, cfg, "/tools/pdf/invoice/decode-upload", pdfBytes)
-			ch <- result{kind: "invoice", data: data, err: err}
+			r, err := service.ParsePDF(pdfBytes)
+			if err == nil {
+				enrichParseResult(ctx, cfg, r)
+			}
+			parseCh <- parseResult{result: r, err: err}
 		}()
 		go func() {
 			data, err := callToolServerUpload(ctx, cfg, "/tools/pdf/items/decode-upload", pdfBytes)
-			ch <- result{kind: "items", data: data, err: err}
+			itemsCh <- itemsResult{data: data, err: err}
 		}()
 
-		var invoiceData, itemsData []byte
-		for i := 0; i < 2; i++ {
-			r := <-ch
-			if r.err != nil {
-				return nil, huma.Error502BadGateway("calling tool server "+r.kind+" endpoint", r.err)
-			}
-			if r.kind == "invoice" {
-				invoiceData = r.data
-			} else {
-				itemsData = r.data
-			}
+		pr := <-parseCh
+		ir := <-itemsCh
+
+		if pr.err != nil {
+			return nil, huma.Error422UnprocessableEntity("failed to process the PDF", pr.err)
+		}
+		if ir.err != nil {
+			return nil, huma.Error502BadGateway("calling tool server items endpoint", ir.err)
 		}
 
 		// items: only keep columns + rows.
@@ -77,14 +81,14 @@ func FullInvoiceHandler(cfg *appConfig.Config, counter *stats.Counter) func(cont
 				Rows    []map[string]interface{} `json:"rows"`
 			} `json:"items"`
 		}
-		if err := json.Unmarshal(itemsData, &itemsWrapper); err != nil {
+		if err := json.Unmarshal(ir.data, &itemsWrapper); err != nil {
 			return nil, huma.Error502BadGateway("parsing items response", err)
 		}
 
 		counter.Increment(sourceFromContext(ctx))
 
 		return &FullInvoiceOutput{Body: FullInvoiceBody{
-			Invoice: invoiceData,
+			Invoice: pr.result,
 			Items: ItemsBody{
 				Columns: itemsWrapper.Items.Columns,
 				Rows:    itemsWrapper.Items.Rows,
